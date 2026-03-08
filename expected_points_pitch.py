@@ -104,15 +104,21 @@ ax.plot([-POST_SEP, -POST_SEP], [Y_BOT, 0], **post_kw)
 ax.plot([ POST_SEP,  POST_SEP], [Y_BOT, 0], **post_kw)
 ax.plot([-POST_SEP,  POST_SEP], [0,     0], **post_kw)
 
+# ── Dashed EP gridlines ───────────────────────────────────────────────────────
+for pts in ep_ticks:
+    y = ep_to_y(pts)
+    if pts > 5.0:   # try line already drawn solid
+        ax.axhline(y, color="white", lw=0.8, ls="--", alpha=0.35, zorder=2)
+
 # ── Y-axis EP scale (right edge) ─────────────────────────────────────────────
 scale_x = HALF_WIDTH + 1.5
 for pts in ep_ticks:
     y = ep_to_y(pts)
     ax.plot([scale_x, scale_x + 0.8], [y, y], color="white", lw=1.2, zorder=7)
-    ax.text(scale_x + 1.2, y, f"{pts:.1f} pts",
+    ax.text(scale_x + 1.2, y, f"{pts:.1f}",
             color="white", fontsize=9, va="center", zorder=7)
 
-ax.text(scale_x + 3.2, ep_to_y(6.0), "Expected\npoints",
+ax.text(scale_x + 2.8, ep_to_y(6.0), "Expected\npoints",
         color="white", fontsize=9, ha="center", va="center",
         rotation=90, zorder=7)
 
@@ -137,13 +143,17 @@ ax.annotate(f"{ep_tl:.2f} pts",
 
 # ── Title & axes ──────────────────────────────────────────────────────────────
 ax.set_title(
-    "Expected Points (Try + Conversion) by Lateral Try Location\n"
-    "13,338 conversion attempts · 2000–2012  (WhartonSABI / Quarrie & Hopkins)",
-    fontsize=12, color="white", pad=10
+    "Expected Points by Try Location",
+    fontsize=13, color="white", pad=10
 )
 
+# Source in bottom-right corner
+ax.text(HALF_WIDTH + 7.8, Y_BOT - 0.3,
+        "WhartonSABI / Quarrie & Hopkins · 13,338 conversion attempts · 2000–2012",
+        color="white", fontsize=6.5, alpha=0.55, ha="right", va="top", zorder=9)
+
 ax.set_xlim(-HALF_WIDTH - 2, HALF_WIDTH + 8)
-ax.set_ylim(Y_BOT - 0.5, Y_TOP + 2)
+ax.set_ylim(Y_BOT - 0.5, Y_TOP + 1.5)
 ax.set_aspect("equal")
 
 ax.set_xticks([-35, -25, -15, -5, 0, 5, 15, 25, 35])
