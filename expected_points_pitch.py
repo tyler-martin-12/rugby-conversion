@@ -1,21 +1,17 @@
 """
-Expected points (try + conversion) vs. lateral try location,
-rendered on a top-down rugby pitch diagram.
+Expected points (try + conversion) vs. lateral try location —
+visualised as a filled curve drawn inside the in-goal zone of a
+top-down rugby pitch.
 
-Data
-----
-Same source as conversion_probability.py: 13,338 conversion attempts
-from goal_kicking_data.csv (WhartonSABI/rugby-ep, Quarrie & Hopkins,
-2000-2012).  Spline is fit to empirical 2.5 m bins.
+The in-goal (10 m deep) is used as the plotting canvas:
+  try line  (y = 0)   ↔  5 pts  (try alone, zero conversion bonus)
+  dead-ball (y = -10) ↔  7 pts  (try + certain conversion)
 
-Layout
-------
-- Top panel  : top-down pitch with a heat-gradient bar along the try line
-               coloured by expected points.
-- Bottom panel: EP curve sharing the same x-axis as the pitch.
+The filled curve shows how much expected value above 5 pts the
+kicker adds, as a function of where the try was scored laterally.
 
-Pitch dimensions (World Rugby standard)
-  width  : 70 m  (posts at X = 35 m  →  half-width = 35 m from centre)
+Data: 13,338 conversion attempts from goal_kicking_data.csv
+(WhartonSABI / Quarrie & Hopkins, 2000-2012).
 """
 
 import matplotlib
@@ -25,13 +21,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.collections import LineCollection
-from matplotlib.colors import Normalize
-import matplotlib.cm as cm
+from matplotlib.patches import FancyArrowPatch
 from scipy.interpolate import UnivariateSpline
 
 # ---------------------------------------------------------------------------
-# Load & aggregate empirical conversion data
+# Load & fit empirical conversion data
 # ---------------------------------------------------------------------------
 df   = pd.read_csv("goal_kicking_data.csv")
 conv = df[df["Type"] == 2].copy()
@@ -41,7 +35,8 @@ bins = np.arange(0, 37.5, 2.5)
 conv["bin"] = pd.cut(conv["lateral_m"], bins=bins, include_lowest=True)
 agg = (
     conv.groupby("bin", observed=True)
-        .agg(attempts=("Quality", "count"), made=("Quality", lambda x: (x == 1).sum()))
+        .agg(attempts=("Quality", "count"),
+             made=("Quality", lambda x: (x == 1).sum()))
 )
 agg["prob"]    = agg["made"] / agg["attempts"]
 agg["bin_mid"] = [i.mid for i in agg.index]
@@ -50,156 +45,133 @@ bin_mid = agg["bin_mid"].values
 bin_p   = agg["prob"].values
 n       = agg["attempts"].values
 
-# Fit weighted smoothing spline
 spl = UnivariateSpline(bin_mid, bin_p, w=np.sqrt(n), k=3, s=len(bin_mid))
 
-# Symmetric lateral positions across the full pitch width
 HALF_WIDTH = 35.0
 lat    = np.linspace(-HALF_WIDTH, HALF_WIDTH, 700)
 p_conv = np.clip(spl(np.abs(lat)), 0, 1)
 ep     = 5 + 2 * p_conv
 
-EP_MIN, EP_MAX = ep.min(), ep.max()
+# ---------------------------------------------------------------------------
+# Map expected points → in-goal y-coordinate
+# 5 pts → y = 0 (try line), 7 pts → y = -10 (dead-ball line)
+# ---------------------------------------------------------------------------
+def ep_to_y(e):
+    return -(e - 5) * 5.0          # 2 pts spans 10 m
+
+curve_y = ep_to_y(ep)
 
 # ---------------------------------------------------------------------------
-# Figure: two-row layout
+# Figure
 # ---------------------------------------------------------------------------
-fig = plt.figure(figsize=(13, 10))
-gs  = fig.add_gridspec(2, 1, height_ratios=[1.6, 1], hspace=0.08)
+IN_GOAL  = 10.0
+Y_BOT    = -IN_GOAL          # dead-ball line
+Y_TOP    = 30.0              # show 30 m of field above try line
+POST_SEP = 5.6 / 2
 
-ax_pitch = fig.add_subplot(gs[0])
-ax_curve = fig.add_subplot(gs[1], sharex=ax_pitch)
+fig, ax = plt.subplots(figsize=(13, 8))
+ax.set_facecolor("#2d6a2d")
 
-# ── Pitch geometry ────────────────────────────────────────────────────────────
-IN_GOAL    = 10.0
-TRY_LINE_Y = 0.0
-Y_BOT      = -IN_GOAL
-Y_TOP      = 30.0
-
-# Alternating grass stripes
+# ── Grass stripes ─────────────────────────────────────────────────────────────
 stripe_colors = ["#2d6a2d", "#316e31"]
 for i, y_start in enumerate(range(int(Y_BOT), int(Y_TOP), 5)):
-    ax_pitch.add_patch(mpatches.Rectangle(
+    ax.add_patch(mpatches.Rectangle(
         (-HALF_WIDTH, y_start), 2 * HALF_WIDTH, 5,
         color=stripe_colors[i % 2], zorder=0
     ))
 
-# In-goal shading
-ax_pitch.add_patch(mpatches.Rectangle(
+# ── In-goal darker tint ───────────────────────────────────────────────────────
+ax.add_patch(mpatches.Rectangle(
     (-HALF_WIDTH, Y_BOT), 2 * HALF_WIDTH, IN_GOAL,
-    color="#1f4f1f", zorder=1, alpha=0.6
+    color="#1f4f1f", zorder=1, alpha=0.5
 ))
 
-# White lines
+# ── EP fill: between try line (y=0) and the EP curve ─────────────────────────
+# Shade from curve_y up to 0 (try line) with a warm golden fill
+ax.fill_between(lat, curve_y, 0,
+                color="#f5c518", alpha=0.55, zorder=2, linewidth=0)
+
+# ── EP curve ──────────────────────────────────────────────────────────────────
+ax.plot(lat, curve_y, color="white", lw=2.5, zorder=5)
+
+# ── Pitch lines ───────────────────────────────────────────────────────────────
 line_kw = dict(color="white", lw=1.5, zorder=3)
-ax_pitch.axvline(-HALF_WIDTH, **line_kw)
-ax_pitch.axvline( HALF_WIDTH, **line_kw)
-ax_pitch.axhline(TRY_LINE_Y, color="white", lw=3, zorder=4)
-ax_pitch.axhline(Y_BOT, **line_kw)
+ax.axvline(-HALF_WIDTH, **line_kw)
+ax.axvline( HALF_WIDTH, **line_kw)
+ax.axhline(0,    color="white", lw=3,   zorder=4)    # try line
+ax.axhline(Y_BOT, **line_kw)                          # dead-ball line
 for y in [5, 10, 22]:
-    ax_pitch.axhline(y, color="white", lw=0.8, ls="--", alpha=0.5, zorder=3)
-    ax_pitch.text(HALF_WIDTH + 0.5, y, f"{y} m", color="white",
-                  fontsize=7.5, va="center", zorder=5)
+    ax.axhline(y, color="white", lw=0.8, ls="--", alpha=0.45, zorder=3)
+    ax.text(HALF_WIDTH + 0.6, y, f"{y} m",
+            color="white", fontsize=8, va="center", zorder=5)
 
-# Goal posts (5.6 m between uprights)
-POST_SEP = 5.6 / 2
-post_kw  = dict(color="yellow", lw=3, zorder=6)
-ax_pitch.plot([-POST_SEP, -POST_SEP], [Y_BOT, 0], **post_kw)
-ax_pitch.plot([ POST_SEP,  POST_SEP], [Y_BOT, 0], **post_kw)
-ax_pitch.plot([-POST_SEP,  POST_SEP], [0, 0],     **post_kw)
+# ── Goal posts ────────────────────────────────────────────────────────────────
+post_kw = dict(color="#FFD700", lw=3.5, zorder=6)
+ax.plot([-POST_SEP, -POST_SEP], [Y_BOT, 0], **post_kw)
+ax.plot([ POST_SEP,  POST_SEP], [Y_BOT, 0], **post_kw)
+ax.plot([-POST_SEP,  POST_SEP], [0,     0], **post_kw)   # crossbar
 
-# ── Heat-gradient bar along the try line ─────────────────────────────────────
-BAR_HEIGHT = 4.0
-cmap = cm.RdYlGn
-norm = Normalize(vmin=EP_MIN, vmax=EP_MAX)
+# ── EP scale on left edge ─────────────────────────────────────────────────────
+scale_x = -HALF_WIDTH - 3.5
+for pts in [5, 5.5, 6, 6.5, 7]:
+    y = ep_to_y(pts)
+    ax.plot([scale_x - 0.5, scale_x + 0.5], [y, y], color="white", lw=1, zorder=7)
+    ax.text(scale_x - 0.8, y, f"{pts:.1f}",
+            color="white", fontsize=8, ha="right", va="center", zorder=7)
 
-points   = np.array([lat, np.full_like(lat, -BAR_HEIGHT / 2)]).T.reshape(-1, 1, 2)
-segments = np.concatenate([points[:-1], points[1:]], axis=1)
-lc = LineCollection(segments, cmap=cmap, norm=norm, linewidth=8, zorder=7)
-lc.set_array(ep[:-1])
-ax_pitch.add_collection(lc)
+# Bracket
+ax.annotate("", xy=(scale_x, Y_BOT), xytext=(scale_x, 0),
+            arrowprops=dict(arrowstyle="<->", color="white", lw=1.2))
+ax.text(scale_x - 2.2, Y_BOT / 2, "Expected\npoints",
+        color="white", fontsize=8.5, ha="center", va="center",
+        rotation=90, zorder=7)
 
-cbar = fig.colorbar(lc, ax=ax_pitch, orientation="horizontal",
-                    fraction=0.035, pad=0.01, aspect=40)
-cbar.set_label("Expected points (try + conversion)", color="white", fontsize=9)
-cbar.ax.xaxis.set_tick_params(color="white")
-plt.setp(cbar.ax.xaxis.get_ticklabels(), color="white", fontsize=8)
+# ── Labels on try line & dead-ball line ──────────────────────────────────────
+ax.text(-HALF_WIDTH + 1, 0.8,  "TRY LINE",       color="white", fontsize=9, zorder=8)
+ax.text(-HALF_WIDTH + 1, Y_BOT + 0.8, "DEAD-BALL LINE", color="white", fontsize=8,
+        alpha=0.7, zorder=8)
+ax.text(-HALF_WIDTH + 1, Y_BOT + 3,  "IN-GOAL",  color="white", fontsize=9,
+        alpha=0.6, zorder=8)
 
-ax_pitch.text(-HALF_WIDTH + 1, Y_BOT + 1, "IN-GOAL", color="white",
-              fontsize=9, alpha=0.7, zorder=8)
-ax_pitch.text(-HALF_WIDTH + 1, 0.8, "TRY LINE", color="white",
-              fontsize=9, alpha=0.9, zorder=8)
-ax_pitch.text(0, -BAR_HEIGHT / 2 - 0.5, "← EP gradient along try line →",
-              color="white", fontsize=8, ha="center", va="top", zorder=8)
+# ── Key annotations ───────────────────────────────────────────────────────────
+ep_centre = float(5 + 2 * np.clip(spl(0), 0, 1))
+ep_tl     = float(ep[0])
+y_ctr     = ep_to_y(ep_centre)
+y_tl      = ep_to_y(ep_tl)
 
-ax_pitch.set_xlim(-HALF_WIDTH - 2, HALF_WIDTH + 6)
-ax_pitch.set_ylim(Y_BOT - 1, Y_TOP + 1)
-ax_pitch.set_aspect("equal")
-ax_pitch.axis("off")
-ax_pitch.set_title(
-    "Expected Points from Try + Conversion by Lateral Try Location\n"
-    "Empirical data · 13,338 conversion attempts · 2000–2012 (WhartonSABI / Quarrie & Hopkins)",
-    fontsize=13, color="black", pad=8
+ax.annotate(f"{ep_centre:.2f} pts",
+            xy=(0, y_ctr), xytext=(8, y_ctr - 1.5),
+            color="white", fontsize=9, fontweight="bold",
+            arrowprops=dict(arrowstyle="->", color="white", lw=1))
+ax.annotate(f"{ep_tl:.2f} pts",
+            xy=(-HALF_WIDTH, y_tl), xytext=(-HALF_WIDTH + 4, y_tl - 1.5),
+            color="white", fontsize=9, fontweight="bold",
+            arrowprops=dict(arrowstyle="->", color="white", lw=1))
+
+# ── Title & layout ────────────────────────────────────────────────────────────
+ax.set_title(
+    "Expected Points (Try + Conversion) by Lateral Try Location\n"
+    "Curve height in in-goal = EP above 5 pts baseline  ·  "
+    "13,338 conversion attempts · 2000–2012",
+    fontsize=12, color="black", pad=10
 )
 
-# ── Bottom panel: EP curve ────────────────────────────────────────────────────
-ax_curve.set_facecolor("#f5f5f5")
-ax_curve.fill_between(lat, 5, ep, alpha=0.20, color="#4caf50")
+ax.set_xlim(-HALF_WIDTH - 7, HALF_WIDTH + 5)
+ax.set_ylim(Y_BOT - 1.5, Y_TOP + 1)
+ax.set_aspect("equal")
 
-points2   = np.array([lat, ep]).T.reshape(-1, 1, 2)
-segments2 = np.concatenate([points2[:-1], points2[1:]], axis=1)
-lc2 = LineCollection(segments2, cmap=cmap, norm=norm, linewidth=3, zorder=4)
-lc2.set_array(ep[:-1])
-ax_curve.add_collection(lc2)
-
-# Overlay raw empirical EP dots (symmetric)
-ep_raw = 5 + 2 * bin_p
-ax_curve.scatter(bin_mid,  ep_raw, s=n/10, color="#1a6faf", zorder=5,
-                 alpha=0.75, label="Empirical bins (size ∝ n)")
-ax_curve.scatter(-bin_mid, ep_raw, s=n/10, color="#1a6faf", zorder=5,
-                 alpha=0.75)
-
-# Baselines
-ax_curve.axhline(5, color="#888", lw=1.2, ls="--", zorder=3)
-ax_curve.text(HALF_WIDTH - 1, 5.03, "Try alone (5 pts)", color="#555",
-              fontsize=8.5, ha="right", va="bottom")
-
-for xv in [-POST_SEP, POST_SEP]:
-    ax_curve.axvline(xv, color="goldenrod", lw=1.2, ls=":", zorder=3)
-
-# Annotations
-ep_centre  = float(spl(0))
-ep_centre  = np.clip(ep_centre, 0, 1)
-ep_pts_ctr = 5 + 2 * ep_centre
-ep_pts_tl  = float(ep[0])
-
-ax_curve.annotate(f"Centre: {ep_pts_ctr:.2f} pts",
-                  xy=(0, ep_pts_ctr), xytext=(4, ep_pts_ctr + 0.25),
-                  arrowprops=dict(arrowstyle="->", color="#333"), fontsize=9)
-ax_curve.annotate(f"Touchline: {ep_pts_tl:.2f} pts",
-                  xy=(-HALF_WIDTH, ep_pts_tl), xytext=(-HALF_WIDTH + 3, ep_pts_tl + 0.25),
-                  arrowprops=dict(arrowstyle="->", color="#333"), fontsize=9)
-
-ax_curve.set_xlim(-HALF_WIDTH - 2, HALF_WIDTH + 6)
-ax_curve.set_ylim(4.8, 7.2)
-ax_curve.set_xlabel("Lateral position along try line  (m from centre / goal posts)", fontsize=11)
-ax_curve.set_ylabel("Expected points", fontsize=11)
-ax_curve.xaxis.set_major_locator(plt.MultipleLocator(5))
-ax_curve.grid(axis="y", ls="--", alpha=0.4)
-ax_curve.legend(fontsize=9)
-
-# Touchline tick labels
-xticks = list(ax_curve.get_xticks())
-for xv in [-HALF_WIDTH, HALF_WIDTH]:
-    if xv not in xticks:
-        xticks.append(xv)
-ax_curve.set_xticks(xticks)
-ax_curve.set_xticklabels(
-    ["TL" if t in (-HALF_WIDTH, HALF_WIDTH) else f"{int(t)}" for t in xticks],
-    fontsize=8
+# x-axis labels (lateral metres)
+ax.set_xticks([-35, -25, -15, -5, 0, 5, 15, 25, 35])
+ax.set_xticklabels(
+    ["TL\n−35", "−25", "−15", "−5", "0\n(posts)", "5", "15", "25", "TL\n35"],
+    color="black", fontsize=8.5
 )
+ax.xaxis.set_ticks_position("bottom")
+ax.set_xlabel("Lateral position along try line  (m from goal posts)", fontsize=11)
+ax.yaxis.set_visible(False)
+ax.spines[:].set_visible(False)
 
 fig.tight_layout()
 out = "expected_points_pitch.png"
-fig.savefig(out, dpi=150, bbox_inches="tight")
+fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="#2d6a2d")
 print(f"Saved → {out}")
