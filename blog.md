@@ -36,7 +36,7 @@ But geometry is just the floor. On top of it sits kicker skill, wind, pressure, 
 
 ## The data
 
-I used the Quarrie & Hopkins dataset (via WhartonSABI): 13,338 conversion attempts from international and top-tier matches between 2000 and 2012. Each attempt already reflects the kicker's own choice of how far to step back — so the empirical success rate at any given lateral position represents the best-case outcome a kicker can achieve from that spot, not a fixed-distance estimate.
+I used the [Quarrie & Hopkins dataset](https://github.com/WhartonSABI/rugby-ep) (via WhartonSABI): 13,338 conversion attempts from international and top-tier matches between 2000 and 2012. Each attempt already reflects the kicker's own choice of how far to step back — so the empirical success rate at any given lateral position represents the best-case outcome a kicker can achieve from that spot, not a fixed-distance estimate.
 
 To smooth out noise, I binned attempts by lateral distance in 2.5 m windows, computed the conversion rate in each bin, and fit a weighted cubic spline — weighting each bin by the square root of its attempt count so that high-traffic zones near the posts carry more influence than sparse bins at the edges.
 
