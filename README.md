@@ -4,9 +4,10 @@ Does try location matter? Analysis of conversion probability and expected points
 
 ## Data
 
-**Quarrie & Hopkins (2014)** — 13,338 conversion attempts from international and top-tier matches, 2000–2012, distributed via [Wharton Sports Analytics and Business Initiative (WSABI)](https://wsb.wharton.upenn.edu/).
+**Quarrie & Hopkins (2014)** — 13,338 conversion attempts from international and top-tier matches, 2000–2012.
 
-Paper: [Evaluation of goal kicking performance in international rugby union matches](https://pubmed.ncbi.nlm.nih.gov/24598404/) — Quarrie & Hopkins, *Journal of Science and Medicine in Sport*, 2015.
+- Data: [github.com/WhartonSABI/rugby-ep](https://github.com/WhartonSABI/rugby-ep)
+- Paper: [Evaluation of goal kicking performance in international rugby union matches](https://pubmed.ncbi.nlm.nih.gov/24598404/) — *Journal of Science and Medicine in Sport*, 2015
 
 Data file: `goal_kicking_data.csv` (not in public repo).
 
