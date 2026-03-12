@@ -111,4 +111,4 @@ My prior was wrong at both ends. Central kicks are harder than I assumed; touchl
 
 The broader lesson is simple: intuitions about sport are often wrong in systematic ways, and they're usually worth checking. Rugby's conversion rule turns out to be cleverly designed. And touchline kicks turn out to be more make-able than the commentary box suggests.
 
-Code and data: [github.com/tyler-martin-12/rugby-conversion](https://github.com/tyler-martin-12/rugby-conversion)
+Code: [github.com/tyler-martin-12/rugby-conversion-public](https://github.com/tyler-martin-12/rugby-conversion-public)
