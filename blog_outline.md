@@ -38,7 +38,29 @@
 
 ---
 
-## 5. Should Players Try to Score More Centrally?
+## 5. What If You *Need* the Conversion? (The Down-by-6 Scenario)
+
+- Set the scene: you're down by 6, late in the match. A try brings you to −1. The conversion wins it.
+- Now try location isn't about half a point of expected value — it's about **win probability**. The stakes sharpen the question.
+- A clear run to the corner vs. a contested path toward the posts: which do you take?
+
+**What most people assume** (embed `naive_model_pitch.png`):
+- My first instinct: 90%+ in the middle third, dropping steeply to maybe 30% at the touchline
+- If that were true, the decision is obvious — fight like hell to get central, because corner kicks are nearly hopeless
+
+**What the data actually shows** (embed `expected_points_pitch.png`):
+- Centre ≈ 82% conversion, touchline ≈ 47% — the gap is real but the naive model overstates it badly
+- The naive mental model imagines a 3:1 ratio (90% vs 30%); reality is closer to 1.75:1 (82% vs 47%)
+- Elite kickers can step back to find a better angle, which is what compresses the gap
+
+**So what should you do?**
+- Unlike the general "trust your winger" conclusion, the must-convert scenario is genuinely sensitive to location — a 35 percentage-point swing in win probability is not nothing
+- But the naive model leads you to *over-weight* that advantage. You shouldn't blow a certain try trying to thread through a defender for a slightly better angle
+- The better frame: if you have an equally easy path centrally, take it. But don't sacrifice the try itself for the angle — a missed try scores nothing, and even a touchline conversion wins the match ~half the time
+
+---
+
+## 6. Should Players Try to Score More Centrally? (General Case)
 - The ~0.7 pt swing sounds small, but at elite level margins matter
 - However: **players rarely choose where to score** — tries are opportunistic. The corner is often the only gap available
 - The more interesting question is for attacking line breaks near the posts: is it worth a player cutting inside to score more centrally vs. taking the easier path to the corner?
@@ -47,7 +69,7 @@
 
 ---
 
-## 6. The American Football Comparison
+## 7. The American Football Comparison
 - In the NFL, the PAT (point after touchdown) is kicked from a fixed spot — the 15-yard line — regardless of where the TD was scored
 - Result: whether a receiver catches in the back of the end zone or dives the corner pylon, the conversion odds are identical (~94% at NFL level)
 - Rugby's moving-kick rule is a deliberate design choice that partially compensates for wide tries — and the data suggests it works well
@@ -55,7 +77,7 @@
 
 ---
 
-## 7. Caveats & Open Questions
+## 8. Caveats & Open Questions
 - **Data age**: 2000–2012 predates modern kicking specialists and GPS biomechanics analysis
 - **Aggregation**: we're collapsing all kickers — a Beauden Barrett vs. a prop filling in are averaged together
 - **Conditions**: no wind/weather controls in this dataset
@@ -64,7 +86,7 @@
 
 ---
 
-## 8. Conclusion
+## 9. Conclusion
 - The corner try penalty is real but small — roughly half a point of expected value
 - Elite kickers effectively arbitrage away most of the geometric disadvantage by choosing their distance back carefully
 - The bigger lesson: rugby's conversion rule is cleverly designed to keep the conversion relevant without making try location overly deterministic
