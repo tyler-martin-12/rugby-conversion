@@ -32,7 +32,7 @@
 
 ## 4. The Finding: The Plot
 - Embed `expected_points_pitch.png`
-- Walk through the curve: 6.64 expected pts under the posts → 5.94 pts at the touchline
+- Walk through the curve: 6.65 expected pts under the posts → 5.78 pts at the touchline
 - The gap is only ~0.7 pts — less than the value of a single penalty goal (3 pts)
 - Contrast with the intuitive assumption (and naive geometric model) that touchline conversions are nearly impossible
 
@@ -49,14 +49,14 @@
 - If that were true, the decision is obvious — fight like hell to get central, because corner kicks are nearly hopeless
 
 **What the data actually shows** (embed `expected_points_pitch.png`):
-- Centre ≈ 82% conversion, touchline ≈ 47% — the gap is real but the naive model overstates it badly
-- The naive mental model imagines a 3:1 ratio (90% vs 30%); reality is closer to 1.75:1 (82% vs 47%)
+- Centre ≈ 82% conversion, touchline ≈ 39% — the gap is real but the naive model overstates it badly
+- The naive mental model imagines a 3:1 ratio (90% vs 30%); reality is closer to 2.1:1 (82% vs 39%)
 - Elite kickers can step back to find a better angle, which is what compresses the gap
 
 **So what should you do?**
-- Unlike the general "trust your winger" conclusion, the must-convert scenario is genuinely sensitive to location — a 35 percentage-point swing in win probability is not nothing
+- Unlike the general "trust your winger" conclusion, the must-convert scenario is genuinely sensitive to location — a 43 percentage-point swing in win probability is not nothing
 - But the naive model leads you to *over-weight* that advantage. You shouldn't blow a certain try trying to thread through a defender for a slightly better angle
-- The better frame: if you have an equally easy path centrally, take it. But don't sacrifice the try itself for the angle — a missed try scores nothing, and even a touchline conversion wins the match ~half the time
+- The better frame: if you have an equally easy path centrally, take it. But don't sacrifice the try itself for the angle — a missed try scores nothing, and even a touchline conversion still goes over ~40% of the time
 
 ---
 

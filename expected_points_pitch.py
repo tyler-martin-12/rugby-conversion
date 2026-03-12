@@ -130,12 +130,14 @@ ax.text(-HALF_WIDTH + 1, Y_BOT + 0.4, "IN-GOAL", color="white", fontsize=8,
 # Key value annotations
 ep_centre = float(5 + 2 * np.clip(spl(0), 0, 1))
 ep_tl     = float(ep[0])
-ax.annotate(f"{ep_centre:.2f} pts",
+pct_centre = int(round(np.clip(spl(0), 0, 1) * 100))
+pct_tl     = int(round(p_conv[0] * 100))
+ax.annotate(f"{ep_centre:.2f} pts  ({pct_centre}%)",
             xy=(0, ep_to_y(ep_centre)),
             xytext=(9, ep_to_y(ep_centre) + 1.5),
             color="white", fontsize=10, fontweight="bold",
             arrowprops=dict(arrowstyle="->", color="white", lw=1.2))
-ax.annotate(f"{ep_tl:.2f} pts",
+ax.annotate(f"{ep_tl:.2f} pts  ({pct_tl}%)",
             xy=(-HALF_WIDTH, ep_to_y(ep_tl)),
             xytext=(-HALF_WIDTH + 5, ep_to_y(ep_tl) + 2),
             color="white", fontsize=10, fontweight="bold",
